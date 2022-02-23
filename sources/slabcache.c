@@ -98,11 +98,13 @@ static struct page *allocate_slab(struct slab_cache *s, gfp_t gfp_mask)
 	int idx;
 
 	page = __alloc_pages(gfp_mask, order);
+	set_page_slab(page);
 
 	start = page_address(page);
 	page->freelist = start;
 	page->slab_cache = s;
 	page->inuse = 0;
+	INIT_LIST_HEAD(&page->slab_list);
 
 	for (idx = 0; idx < (objects - 1); idx++) {
 		next = (void *)((unsigned long)start + s->size);
@@ -197,13 +199,6 @@ void *slab_cache_alloc(struct slab_cache *s, gfp_t gfp_mask)
 	return object;
 }
 
-static inline struct page *virt_to_head_page(void *vaddr)
-{
-	struct page *page = virt_to_page(vaddr);
-
-	return page;
-}
-
 static inline struct slab_cache *cache_from_obj(void *object)
 {
 	struct page *page;
@@ -217,6 +212,7 @@ static void discard_slab(struct slab_cache *s, struct page *page)
 {
 	int order = s->oo.order;
 
+	clear_page_slab(page);
 	__free_pages(page, order);
 }
 
