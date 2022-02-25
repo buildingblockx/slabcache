@@ -1,4 +1,5 @@
 #include <memory/allocator/slabcache.h>
+#include <print.h>
 #include <string.h>
 
 void test_alloc_8bytes(void)
@@ -8,26 +9,26 @@ void test_alloc_8bytes(void)
 	unsigned int align;
 	unsigned long *buf;
 
-	printf("Enter %s\n", __func__);
+	pr_info("Enter %s\n", __func__);
 
 	object_size = sizeof(unsigned long);
 	align = 8;
-	printf("\tslab cache create, object size %d, align %d\n",
+	pr_info("\tslab cache create, object size %d, align %d\n",
 		object_size, align);
 	s = slab_cache_create("unsigned long", object_size, align, 0);
 
-	printf("\tslab cache alloc\n");
+	pr_info("\tslab cache alloc\n");
 	buf = slab_cache_alloc(s, 0);
 	*buf = 0x123456;
-	printf("\tbuf address %p, buf values 0x%lx\n", buf, *buf);
+	pr_info("\tbuf address %p, buf values 0x%lx\n", buf, *buf);
 
-	printf("\tslab cache free\n");
+	pr_info("\tslab cache free\n");
 	slab_cache_free(s, buf);
 
-	printf("\tslab cache destroy\n");
+	pr_info("\tslab cache destroy\n");
 	slab_cache_destroy(s);
 
-	printf("Exit %s\n", __func__);
+	pr_info("Exit %s\n", __func__);
 }
 
 struct structA {
@@ -42,33 +43,33 @@ void test_alloc_structA(void)
 	unsigned int align;
 	struct structA *buf;
 
-	printf("Enter %s\n", __func__);
+	pr_info("Enter %s\n", __func__);
 
 	object_size = sizeof(struct structA);
 	align = 8;
-	printf("\tslab cache create, object size %d, align %d\n",
+	pr_info("\tslab cache create, object size %d, align %d\n",
 		object_size, align);
 	s = slab_cache_create("struct structA", object_size, align, 0);
 
-	printf("\tslab cache alloc\n");
+	pr_info("\tslab cache alloc\n");
 	buf = slab_cache_alloc(s, 0);
 	strcpy(buf->name, "test");
 	buf->id = 0xaa;
-	printf("\tbuf address %p, buf->name %s, buf->id 0x%x\n",
+	pr_info("\tbuf address %p, buf->name %s, buf->id 0x%x\n",
 		buf, buf->name, buf->id);
 
-	printf("\tslab cache free\n");
+	pr_info("\tslab cache free\n");
 	slab_cache_free(s, buf);
 
-	printf("\tslab cache destroy\n");
+	pr_info("\tslab cache destroy\n");
 	slab_cache_destroy(s);
 
-	printf("Exit %s\n", __func__);
+	pr_info("Exit %s\n", __func__);
 }
 
 int slab_cache_allocator_test(void)
 {
-	printf("\nslab cache allocator init\n");
+	pr_info("\nslab cache allocator init\n");
 	slab_cache_allocator_init();
 
 	test_alloc_8bytes();
@@ -76,4 +77,3 @@ int slab_cache_allocator_test(void)
 
 	return 0;
 }
-

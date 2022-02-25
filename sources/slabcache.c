@@ -1,6 +1,12 @@
-#include <slabcache.h>
+#include <memory/allocator/page.h>
+#include <memory/page_flags.h>
+#include <memory/gfp.h>
 #include <page.h>
+#include <slabcache.h>
 #include <list.h>
+#include <align.h>
+#include <print.h>
+#include <string.h>
 
 struct slab_cache *slab_cache;
 
@@ -199,11 +205,16 @@ void *slab_cache_alloc(struct slab_cache *s, gfp_t gfp_mask)
 	return object;
 }
 
+void *slab_cache_zalloc(struct slab_cache *s, gfp_t gfp_mask)
+{
+        return slab_cache_alloc(s, gfp_mask | __GFP_ZERO);
+}
+
 static inline struct slab_cache *cache_from_obj(void *object)
 {
 	struct page *page;
 
-	page = virt_to_head_page(object);
+	page = virt_to_page(object);
 
 	return page->slab_cache;
 }
@@ -279,7 +290,7 @@ void slab_cache_free(struct slab_cache *s, void *object)
 		s = slabcache;
 	}
 
-	page = virt_to_head_page(object);
+	page = virt_to_page(object);
 	if (page == s->page) {
 		set_freepointer(s, object, s->freelist);
 		s->freelist = object;
@@ -344,13 +355,7 @@ int __slab_cache_create(struct slab_cache *s,
  * @name: A string to identify this cache.
  * @object_size: The size of objects to be created in this cache.
  * @align: The required alignment for the objects.
- * @flags: SLAB flags
- *
- * The flags are
- *
- * %SLAB_HWCACHE_ALIGN - Align the objects in this cache to a hardware
- * cacheline.  This can be beneficial if you're counting cycles as closely
- * as davem.
+ * @flags: slab cache flags
  *
  * Return: a pointer to the slab cache on success, NULL on failure.
  */
@@ -423,7 +428,7 @@ static struct slab_cache *bootstrap(struct slab_cache *static_cache)
 
 	memcpy(s, static_cache, slab_cache->object_size);
 
-	page = virt_to_head_page(s);
+	page = virt_to_page(s);
 	page->slab_cache = s;
 
 	INIT_LIST_HEAD(&s->partial);
@@ -446,4 +451,3 @@ void slab_cache_allocator_init(void)
 
 	slab_cache = bootstrap(&boot_slab_cache);
 }
-
