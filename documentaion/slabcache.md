@@ -1,10 +1,10 @@
-# slab allocator
+# slab cache allocator
 
 ## 概述
 
-之前通过`page allocator`进行管理所有内存，以`page`为单位，但是日常使用中经常需要小于`one page`的内存大小。如果需要分配`8Bytes`内存，但是分配了`one page`，过于浪费。于是，将多个`page`组成`one slab`，以`slab`为单位的`slab allocator`就诞生了，将`one slab`分成多个`object`，一个`object`可以等于任意大小字节。
+之前通过`page allocator`进行管理所有内存，以`page`为单位，但是日常使用中经常需要小于`one page`的内存大小。如果需要分配`8Bytes`内存，但是分配了`one page`，过于浪费。于是，将多个`page`组成`one slab`，以`slab`为单位的`slab cache allocator`就诞生了，将`one slab`分成多个`object`，一个`object`可以等于任意大小字节。
 
-这里是采用`slub`算法的`slab allocator`
+这里是采用`slub`算法的`slab cache allocator`
 
 ## 原理
 
@@ -45,7 +45,7 @@ slab_cache        │     │ freelist    ├─────────┘   �
                         └─────────────┘             └────────┘
 ```
 
-`slab allocator`整体布局，如上图所示，
+`slab cache allocator`整体布局，如上图所示，
 
 每一个`slab cache`包含当前正在使用的`slab`（`page`成员指向此`slab`首地址，`freelist`成员指向此`slab`的第一个空闲`object`，同时第一个空闲`object`存储着下一个空闲`object`首地址，以此类推，最后一个空闲`object`指向`NULL`），其他`slab`存放在`partial`与`full`链表中。
 
@@ -64,7 +64,7 @@ slab_cache        │     │ freelist    ├─────────┘   �
 
 ## 如何使用？
 
-使用`slab allocator`时，只需要在`page allocater`初始化结束后，调用`slab_cache_allocator_init()`即可，接下来就可以调用相关API进行 创建/销毁`slab cacha`，分配/释放内存
+使用`slab cache allocator`时，只需要在`page allocater`初始化结束后，调用`slab_cache_allocator_init()`即可，接下来就可以调用相关API进行 创建/销毁`slab cache`，分配/释放内存
 
 使用时记得加上头文件：`#include <memory/allocator/slabcache.h>`
 
@@ -72,7 +72,7 @@ slab_cache        │     │ freelist    ├─────────┘   �
 
 * 已完成功能：
 
-1. 创建/销毁`slab cacha`
+1. 创建/销毁`slab cache`
 2. 从`slab cahce`中分配/释放指定大小的`object`
 
 * 未完成功能：
